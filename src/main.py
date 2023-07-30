@@ -57,6 +57,9 @@ if __name__ == "__main__":
         surfaces, index = index_train_data_surfaces(surfaces, column_names)
         X = []
 
+        # find the longest timestamp across all dynamic graphs
+        max_timestamp = max(len(surfaces[i][j]) for i in range(n_dynamic_graphs) for j in range(n_node_labels))
+
         # longest timestamp, so that all input vectors have the same dimension
         for dynamic_graph_idx in range(n_dynamic_graphs):
             dynamic_graph_representation = []
@@ -64,6 +67,13 @@ if __name__ == "__main__":
                 # of each timestamp
                 for timestamp in range(len(surfaces[dynamic_graph_idx][node_label_idx])):
                     dynamic_graph_representation.extend(surfaces[dynamic_graph_idx][node_label_idx][timestamp])
+
+                # padding the dynamic graph representation to match the max_timestamp
+                last_timestamp_representation = surfaces[dynamic_graph_idx][node_label_idx][-1]
+                num_padding_needed = max_timestamp - len(surfaces[dynamic_graph_idx][node_label_idx])
+                for _ in range(num_padding_needed):
+                    dynamic_graph_representation.extend(last_timestamp_representation)
+
             X.append(dynamic_graph_representation)
 
         run_rf(X, y)

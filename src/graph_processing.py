@@ -4,24 +4,8 @@ import glob
 import pickle
 from tqdm import tqdm
 import pandas as pd
-import igraph as ig
-import networkx as nx
 from sklearn.preprocessing import LabelEncoder
-
-def relabel_edges_with_curvature(graph):
-    # convert to networkx
-    G = ig.Graph.get_edgelist(graph)
-    G = nx.Graph(G)
-
-    # compute curvature
-    orc = OllivierRicci(G, alpha=0.5, verbose="INFO")
-    orc.compute_ricci_curvature()
-    for u, v, e in G.edges(data=True):
-        G[u][v]["weight"] = orc.G[u][v]["ricciCurvature"]
-
-    # convert back to igraph
-    graph = ig.Graph.from_networkx(G)
-    return graph
+from relabel_edges import relabel_edges_with_curvature
 
 def filtration_by_edge_attribute(
     graph, attribute="weight", delete_nodes=False, stop_early=False
@@ -56,8 +40,6 @@ def filtration_by_edge_attribute(
 
     n_nodes = graph.vcount()
 
-    # TODO: remove unused print statements
-    # print(len(weights))
     if (
         weights.size != 1
     ):  # hack to deal with funny graph that has a single edge and was getting 0-D errors
@@ -69,7 +51,6 @@ def filtration_by_edge_attribute(
         # weights = [weights]
 
     for weight in sorted(weights):
-        # print(type(weight))
         if x:  # again part of the hack
             weight = weight[0]
         edges = graph.es.select(lambda edge: edge[attribute] <= weight)
@@ -132,7 +113,6 @@ def node_label_distribution(filtration, label_to_index):
 
     return D
 
-# TODO: adjust the code, so that if no edge weights exist, then the edge weights are calculated via the ricci curvature
 def save_curves_for_dynamic_graphs(
     source_path="./data/labeled_datasets/BZR_MD",
     output_path="./data/preprocessed_data/BZR_MD/",
@@ -159,7 +139,7 @@ def save_curves_for_dynamic_graphs(
 
     all_node_labels = set()
 
-    for filename in filenames:
+    for filename in tqdm(filenames):
         # Each pickle file contains a sequence of igraphs
         dynamic_graph, label = pickle.load(open(filename, "rb"))
 
@@ -179,15 +159,15 @@ def save_curves_for_dynamic_graphs(
             output_path, os.path.splitext(os.path.basename(filename))[0]
         )
 
+        # check if weights exist, if not, compute curvature
+        if "weight" not in dynamic_graph[0].es.attributes():
+                dynamic_graph = relabel_edges_with_curvature(dynamic_graph)
+
         for idx, graph in enumerate(dynamic_graph):
             # Generate the filtration curve for each graph in the dynamic graph
             # We will store this filtration curve as a separate csv for each timestamp
 
-            # check if weights exist, if not, compute curvature
-            if "weight" not in graph.es.attributes():
-                graph = relabel_edges_with_curvature(graph)
-            else:
-                graph.es["weight"] = [e["attribute"] for e in graph.es]
+            graph.es["weight"] = [e["attribute"] for e in graph.es]
 
             # set all graph labels to integers if they are strings
             for v in graph.vs:
@@ -314,8 +294,13 @@ def load_surfaces(args):
         surface = []
 
         # only add y once per dynamic graph
-        temp_df = pd.read_csv(files[0], header=0, index_col="weight")
-        y.append(temp_df["graph_label"].values[0])
+        for i, file in enumerate(files):
+            temp_df = pd.read_csv(file, header=0, index_col="weight")
+            if not temp_df["graph_label"].empty:  # Add this check
+                y.append(temp_df["graph_label"].values[0])
+                break
+            else:
+                print(f"Warning: 'graph_label' column in file {file} is empty.")
 
         for file in files:
             df = pd.read_csv(file, header=0, index_col="weight")

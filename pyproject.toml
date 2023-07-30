@@ -20,6 +20,7 @@ matplotlib = "^3.7.1"
 pycairo = "^1.23.0"
 
 [tool.poetry.dev-dependencies]
+ipyml = "*"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
