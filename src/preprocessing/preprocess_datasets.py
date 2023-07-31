@@ -13,7 +13,7 @@ def convert_dataset_to_dynamic_graph(path, dataset_name="infectious_ct1"):
     A = pd.read_csv(f"{path}/{dataset_name}_A.txt", header=None).values
     graph_indicator = pd.read_csv(f"{path}/{dataset_name}_graph_indicator.txt", header=None).values.squeeze()
     graph_labels = pd.read_csv(f"{path}/{dataset_name}_graph_labels.txt", header=None).values.squeeze()
-    node_labels = pd.read_csv(f"{path}/{dataset_name}_node_labels.txt", header=None, dtype=str)  # load as DataFrame with a single column of strings
+    node_labels = pd.read_csv(f"{path}/{dataset_name}_node_labels.txt", header=None, names=range(4), dtype=str)
     node_labels = node_labels.applymap(lambda x: pd.to_numeric(x, errors='coerce'))
 #     node_labels = node_labels[0].str.split(',', expand=False)  # split each line into a list of strings
 #     node_labels = node_labels.apply(lambda x: [int(i) for i in x])  # convert strings to integers

@@ -38,6 +38,7 @@ def run_rf(X, y, n_iterations=10):
                 warnings.filterwarnings("ignore")
                 fold_metrics = compute_fold_metrics(y_test, y_pred, fold_metrics)
         iteration_metrics = update_iteration_metrics(fold_metrics, iteration_metrics)
+        print(f"Temporary iteration metric after iteration {iteration}: {iteration_metrics}")
 
     print_iteration_metrics(iteration_metrics)
 

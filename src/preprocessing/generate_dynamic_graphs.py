@@ -164,7 +164,7 @@ def main():
     )
 
     # Save the dynamic graphs
-    save_dynamic_graphs(dynamic_graphs, labels, f"./data/labeled_datasets/{args.dataset}/")
+    save_dynamic_graphs(dynamic_graphs, labels, f"./data/labeled_datasets/{args.type}/")
 
 if __name__ == "__main__":
     main()
