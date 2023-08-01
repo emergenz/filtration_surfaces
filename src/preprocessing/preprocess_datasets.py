@@ -2,7 +2,6 @@ import argparse
 from collections import defaultdict
 import os
 import pickle
-from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 from igraph import Graph
