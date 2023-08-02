@@ -8,7 +8,7 @@ import numpy as np
 import os
 
 
-def generate_dynamic_graphs_er(num_graphs, num_nodes, num_timesteps, edge_probs, num_labels):
+def generate_dynamic_graphs_er(num_graphs, num_nodes, num_timesteps, num_edges, num_labels):
     """
     Generate a set of dynamic graphs and corresponding labels using the Erdős-Rényi model.
 
@@ -20,8 +20,8 @@ def generate_dynamic_graphs_er(num_graphs, num_nodes, num_timesteps, edge_probs,
         The number of nodes in each graph.
     num_timesteps : int
         The number of timesteps in each dynamic graph.
-    edge_probs : tuple of float
-        The lower and upper bound for the edge probabilities.
+    num_edges : int
+        The number of edges to be added at each timestep.
     num_labels : int
         The number of unique labels to assign.
 
@@ -30,13 +30,13 @@ def generate_dynamic_graphs_er(num_graphs, num_nodes, num_timesteps, edge_probs,
     dynamic_graphs : list of list of Graph
         The generated dynamic graphs. Each dynamic graph is represented as a list of igraph Graph instances.
     labels : list of int
-        The labels for the dynamic graphs. A label is 1 if the average edge probability in the graph is greater than
-        the average of the lower and upper bound, and 0 otherwise.
+        The labels for the dynamic graphs. A label is 1 if the average edge count in the graph is greater than
+        the number of nodes multiplied by the number of edges, and 0 otherwise.
     """
     dynamic_graphs = []
     labels = []
     for _ in range(num_graphs):
-        edge_prob = random.uniform(*edge_probs)
+        edge_prob = num_edges / (num_nodes * (num_nodes - 1) / 2)  # calculate edge probability
         dynamic_graph = []
         for _ in range(num_timesteps):
             g = Graph.Erdos_Renyi(n=num_nodes, p=edge_prob)
@@ -47,8 +47,9 @@ def generate_dynamic_graphs_er(num_graphs, num_nodes, num_timesteps, edge_probs,
             g.es["attribute"] = [random.randint(1, 10) for _ in range(g.ecount())]
             dynamic_graph.append(g)
         dynamic_graphs.append(dynamic_graph)
-        labels.append(int(edge_prob > np.mean(edge_probs)))
+        labels.append(int(g.ecount() > num_nodes * num_edges))
     return dynamic_graphs, labels
+
 
 def generate_dynamic_graphs_via_random_ba_graphs(num_graphs, num_nodes, num_timesteps, num_edges, num_labels):
     dynamic_graphs = []
