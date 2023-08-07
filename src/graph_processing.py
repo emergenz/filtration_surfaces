@@ -1,3 +1,4 @@
+# adapted from https://github.com/BorgwardtLab/filtration_curves
 import numpy as np
 import os
 import glob
@@ -167,7 +168,8 @@ def save_curves_for_dynamic_graphs(
             # Generate the filtration curve for each graph in the dynamic graph
             # We will store this filtration curve as a separate csv for each timestamp
 
-            graph.es["weight"] = [e["attribute"] for e in graph.es]
+            if "weight" not in graph.es.attributes():
+                graph.es["weight"] = [e["attribute"] for e in graph.es]
 
             # set all graph labels to integers if they are strings
             for v in graph.vs:

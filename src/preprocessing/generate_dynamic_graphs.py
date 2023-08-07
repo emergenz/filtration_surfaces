@@ -36,18 +36,20 @@ def generate_dynamic_graphs_er(num_graphs, num_nodes, num_timesteps, num_edges, 
     dynamic_graphs = []
     labels = []
     for _ in range(num_graphs):
-        edge_prob = num_edges / (num_nodes * (num_nodes - 1) / 2)  # calculate edge probability
         dynamic_graph = []
-        for _ in range(num_timesteps):
+        for i in range(num_timesteps):
+            edge_prob = (num_edges + 2*i) / (num_nodes * (num_nodes - 1) / 2)  # calculate edge probability
+            edge_prob = min(edge_prob, 1.0)
             g = Graph.Erdos_Renyi(n=num_nodes, p=edge_prob)
             # Assign node labels
             labels_per_node = [random.randint(1, num_labels) for _ in range(num_nodes)]
             g.vs["label"] = [f"{label}" for i, label in enumerate(labels_per_node)]
             # Assign edge attributes
-            g.es["attribute"] = [random.randint(1, 10) for _ in range(g.ecount())]
+            g.es["weight"] = [random.randint(1, 10) for _ in range(g.ecount())]
             dynamic_graph.append(g)
         dynamic_graphs.append(dynamic_graph)
-        labels.append(int(g.ecount() > num_nodes * num_edges))
+        print(int(g.vs["label"].count('1') > g.vcount() / 2))
+        labels.append(int(g.vs["label"].count('1') > g.vcount() / 2))
     return dynamic_graphs, labels
 
 
@@ -56,23 +58,23 @@ def generate_dynamic_graphs_via_random_ba_graphs(num_graphs, num_nodes, num_time
     labels = []
     for _ in range(num_graphs):
         dynamic_graph = []
-        for _ in range(num_timesteps):
+        for i in range(num_timesteps):
             # Generate graph using Barabási–Albert model
-            g = Graph.Barabasi(n=num_nodes, m=num_edges)
+            g = Graph.Barabasi(n=num_nodes, m=(num_edges + 2 * i))
 
             # Assign node labels
             labels_per_node = [random.randint(1, num_labels) for _ in range(num_nodes)]
             g.vs["label"] = [f"{label}" for i, label in enumerate(labels_per_node)]
 
             # Assign edge attributes
-            g.es["attribute"] = [random.randint(1, 10) for _ in range(g.ecount())]
+            g.es["weight"] = [random.randint(1, 10) for _ in range(g.ecount())]
 
             dynamic_graph.append(g)
 
         dynamic_graphs.append(dynamic_graph)
 
-        # Generate label based on the total number of edges in the graph
-        labels.append(int(g.ecount() > num_nodes * num_edges))
+        print(int(g.vs["label"].count('1') > g.vcount() / 2))
+        labels.append(int(g.vs["label"].count('1') > g.vcount() / 2))
 
     return dynamic_graphs, labels
 
@@ -85,7 +87,7 @@ def generate_dynamic_graphs_via_ba_growth(num_graphs, initial_nodes, num_timeste
         # Start with an initial complete graph
         g = Graph.Full(initial_nodes)
         g.vs["label"] = [str(random.randint(1, num_labels)) for _ in range(initial_nodes)]
-        g.es["attribute"] = [random.randint(1, 10) for _ in range(g.ecount())]
+        g.es["weight"] = [random.randint(1, 10) for _ in range(g.ecount())]
 
         dynamic_graph.append(g.copy())
 
@@ -105,15 +107,14 @@ def generate_dynamic_graphs_via_ba_growth(num_graphs, initial_nodes, num_timeste
             g.vs[len(degrees)-1]["label"] = str(random.randint(1, num_labels))
 
             # Assign edge attributes for the new edges
-            g.es[g.ecount()-num_edges:]["attribute"] = [random.randint(1, 10) for _ in range(num_edges)]
+            g.es[g.ecount()-num_edges:]["weight"] = [random.randint(1, 10) for _ in range(num_edges)]
 
             dynamic_graph.append(g.copy())
 
         dynamic_graphs.append(dynamic_graph)
 
-        # Generate label based on the total number of edges in the graph
-        labels.append(int(g.ecount() > initial_nodes * num_edges))
-
+        print(int(g.vs["label"].count('1') > g.vcount() / 2))
+        labels.append(int(g.vs["label"].count('1') > g.vcount() / 2))
     return dynamic_graphs, labels
 
 

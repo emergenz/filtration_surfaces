@@ -50,3 +50,20 @@ To train and test our method, run:
 where `DATASET` is the name of the folder in `data/labeled_datasets/` containing the dataset. This will construct filtration surfaces for the given dataset and store them in `data/preprocessed_data/DATASET` for later reuse. Afterwards, the filtration surfaces are used as an input for the random forest classifier. 
 
 If the filtration curves already exists in `data/preprocessed_data/DATASET` (because they were already constructed by a previous run), then the filtration curves are directly loaded.
+
+# 
+This code adapts and extends existing code from O'Bray, Rieck and Borgwardt (2021) on filtration curves. Their code can be found at https://github.com/BorgwardtLab/filtration_curves and their corresponding paper shall be referenced as:
+
+```bibtex
+@inproceedings{OBray21a,
+    title        = {Filtration Curves for Graph Representation},
+    author       = {O'Bray, Leslie and Rieck, Bastian and Borgwardt, Karsten},
+    doi          = {10.1145/3447548.3467442},
+    year         = 2021,
+    booktitle    = {Proceedings of the 27th ACM SIGKDD International
+                Conference on Knowledge Discovery \& Data Mining~(KDD)},
+    publisher    = {Association for Computing Machinery},
+    address      = {New York, NY, USA},
+    pubstate     = {inpress},
+}
+```

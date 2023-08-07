@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# adapted from https://github.com/BorgwardtLab/filtration_curves
 
 from tqdm import tqdm
 

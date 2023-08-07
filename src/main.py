@@ -1,3 +1,4 @@
+# adapted from https://github.com/BorgwardtLab/filtration_curves
 import argparse
 import random
 import os
