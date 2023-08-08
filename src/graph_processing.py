@@ -9,7 +9,7 @@ from sklearn.preprocessing import LabelEncoder
 from relabel_edges import relabel_edges_with_curvature
 
 def filtration_by_edge_attribute(
-    graph, attribute="weight", delete_nodes=False, stop_early=False
+    graph, attribute="weight", delete_nodes=True, stop_early=False
 ):
     """
     Calculates a filtration of a graph based on an edge attribute of the
