@@ -2,6 +2,7 @@
 import argparse
 import random
 import os
+import time
 import glob
 import warnings
 import numpy as np
@@ -32,12 +33,22 @@ def run_rf(X, y, n_iterations=10):
             y_test = [y[i] for i in test_index]
 
             clf = RandomForestClassifier(max_depth=None, random_state=0, n_estimators=1000, class_weight="balanced")
+
+            # Measure training time
+            start_train_time = time.time()
             clf.fit(X_train, y_train)
+            end_train_time = time.time()
+            training_time = end_train_time - start_train_time
+
+            # Measure inference time
+            start_inference_time = time.time()
             y_pred = clf.predict(X_test)
+            end_inference_time = time.time()
+            inference_time = end_inference_time - start_inference_time
 
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore")
-                fold_metrics = compute_fold_metrics(y_test, y_pred, fold_metrics)
+                fold_metrics = compute_fold_metrics(y_test, y_pred, training_time, inference_time, fold_metrics)
         iteration_metrics = update_iteration_metrics(fold_metrics, iteration_metrics)
         print(f"Temporary iteration metric after iteration {iteration}: {iteration_metrics}")
 

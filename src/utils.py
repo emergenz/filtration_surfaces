@@ -3,7 +3,7 @@ from sklearn.metrics import accuracy_score
 import numpy as np
 
 
-def create_metric_dict(metrics=["accuracy"]):
+def create_metric_dict(metrics=["accuracy", "training_time", "inference_time"]):
     """
     Creates a dictionary that will store the metrics calculated in cross
     validation.
@@ -27,7 +27,7 @@ def create_metric_dict(metrics=["accuracy"]):
     return metric_dict
 
 
-def compute_fold_metrics(y_test, y_pred, metric_dict):
+def compute_fold_metrics(y_test, y_pred, training_time, inference_time, metric_dict):
     """
     Calculates the metrics of interest on the classifier and updates the
     dictionary with the values.
@@ -62,6 +62,8 @@ def compute_fold_metrics(y_test, y_pred, metric_dict):
 
     # update dictionary values
     metric_dict["accuracy"].append(accuracy)
+    metric_dict["training_time"].append(training_time)
+    metric_dict["inference_time"].append(inference_time)
 
     return metric_dict
 
@@ -116,7 +118,7 @@ def update_iteration_metrics(fold_metrics, iteration_metrics):
         the current iteration.
 
     """
-    for metric in ["accuracy"]:
+    for metric in fold_metrics:
         iteration_metrics[metric].append(np.mean(fold_metrics[metric]))
 
     return iteration_metrics
