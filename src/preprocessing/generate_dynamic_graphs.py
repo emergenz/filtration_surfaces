@@ -145,7 +145,7 @@ def save_dynamic_graphs_txt_format(dynamic_graphs, labels, path):
     os.makedirs(path, exist_ok=True)
     
     # File paths
-    prefix = os.path.join(path, "DS")
+    prefix = os.path.join(path, "")
     a_path = f"{prefix}_A.txt"
     graph_indicator_path = f"{prefix}_graph_indicator.txt"
     graph_labels_path = f"{prefix}_graph_labels.txt"
