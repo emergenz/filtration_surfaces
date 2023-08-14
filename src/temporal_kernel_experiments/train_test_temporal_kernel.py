@@ -10,11 +10,32 @@ def load_data(DS_prefix):
     graph_labels = np.loadtxt(f"{DS_prefix}_graph_labels.txt", delimiter=",", dtype=int)
     return graph_labels
 
+def load_gram_matrix(filename):
+    # Create a list to store the matrix data
+    matrix_data = []
+
+    with open(filename, 'r') as f:
+        for line in f:
+            # Split the line by spaces
+            row_data = line.strip().split()
+            # Create an empty row for the matrix
+            row = np.zeros(len(row_data) - 1)
+
+            for item in row_data[1:]:
+                index, value = item.split(':')
+                index = int(index) - 1  # 0-based index
+                row[index] = float(value)
+            matrix_data.append(row)
+
+    # Convert the list of rows to a numpy matrix
+    matrix = np.array(matrix_data)
+    return matrix
+
 # 2. Compute Gram matrix
 def compute_gram_matrix(DS_prefix, k_value, tgkernel_path):
-    cmd = f"{tgkernel_path} {DS_prefix} 7 {k_value} {k_value}"
+    cmd = f"{tgkernel_path} {DS_prefix} 10 {k_value} {k_value}"
     run(cmd.split())
-    gram_matrix = np.loadtxt(f"{DS_prefix}__SEWL_{k_value}.gram", delimiter=",")
+    gram_matrix = load_gram_matrix(f"./DS__SEWL_{k_value}.gram")
     return gram_matrix
 
 # 3. Train and test SVM
@@ -55,7 +76,7 @@ def main(DS_prefix, tgkernel_path):
     print(f"Best k-value: {best_k} with accuracy: {best_accuracy}")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Generate and save dynamic graphs.')
+    parser = argparse.ArgumentParser(description='Train and test temporal graph kernels.')
     parser.add_argument('--path', type=str, help='Path to your dataset including the prefix')
     parser.add_argument('--tgkernel', type=str, help='Path to tgkernel')
     args = parser.parse_args()
