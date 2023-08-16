@@ -152,6 +152,7 @@ def save_curves_for_dynamic_graphs(
     # Create sorted list of all possible node labels
     all_node_labels = sorted(all_node_labels)
 
+    surface_creation_time = 0
     for filename in tqdm(filenames):
         # Each pickle file contains a sequence of igraphs
         dynamic_graph, label = pickle.load(open(filename, "rb"))
@@ -218,8 +219,8 @@ def save_curves_for_dynamic_graphs(
 
             df.to_csv(output_name, index=False)
         surface_creation_end = time.time()
-        surface_creation_time = surface_creation_end - surface_creation_start
-        return surface_creation_time
+        surface_creation_time += (surface_creation_end - surface_creation_start)
+    return surface_creation_time
 
 
 def create_surfaces(args):
