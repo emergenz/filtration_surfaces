@@ -224,12 +224,12 @@ def main():
 
     # Save the dynamic graphs
     if args.format == "pickle":
-        save_dynamic_graphs(dynamic_graphs, labels, f"./data/labeled_datasets/{args.type}_pickle/")
+        save_dynamic_graphs(dynamic_graphs, labels, f"./data/labeled_datasets/{args.type}_{args.num_graphs}_pickle/")
     elif args.format == "txt":
-        save_dynamic_graphs_txt_format(dynamic_graphs, labels, f"./data/labeled_datasets/{args.type}_txt/")
+        save_dynamic_graphs_txt_format(dynamic_graphs, labels, f"./data/labeled_datasets/{args.type}_{args.num_graphs}_txt/")
     elif args.format == "both":
-        save_dynamic_graphs(dynamic_graphs, labels, f"./data/labeled_datasets/{args.type}_pickle/")
-        save_dynamic_graphs_txt_format(dynamic_graphs, labels, f"./data/labeled_datasets/{args.type}_txt/")
+        save_dynamic_graphs(dynamic_graphs, labels, f"./data/labeled_datasets/{args.type}_{args.num_graphs}_pickle/")
+        save_dynamic_graphs_txt_format(dynamic_graphs, labels, f"./data/labeled_datasets/{args.type}_{args.num_graphs}_txt/")
     else:
         print(f"Unsupported format: {args.format}")
 
