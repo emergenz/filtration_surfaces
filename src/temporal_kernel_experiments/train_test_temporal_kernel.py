@@ -35,7 +35,8 @@ def load_gram_matrix(filename):
 def compute_gram_matrix(DS_prefix, k_value, tgkernel_path):
     cmd = f"{tgkernel_path} {DS_prefix} 10 {k_value} {k_value}"
     run(cmd.split())
-    gram_matrix = load_gram_matrix(f"./DS__SEWL_{k_value}.gram")
+    DS_prefix = DS_prefix.split("/")[-1]
+    gram_matrix = load_gram_matrix(f"./{DS_prefix}__SEWL_{k_value}.gram")
     return gram_matrix
 
 # 3. Train and test SVM
