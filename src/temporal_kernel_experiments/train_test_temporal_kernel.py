@@ -126,10 +126,10 @@ def compute_accuracies(DS_prefix, tgkernel_path):
 def compute_times(DS_prefix, tgkernel_path):
     labels = load_data(DS_prefix)
     mean_train_time, mean_inference_time, gram_time, gram_matrix_size = train_and_inference_speed(DS_prefix, tgkernel_path, labels)
-    print(f"Gram Matrix Time: {gram_time:.2f}s")
-    print(f"Mean Training Time: {mean_train_time:.2f}s")
-    print(f"Mean Inference Time: {mean_inference_time:.2f}s")
-    print(f"Gram Matrix Size: {gram_matrix_size:.2f}MB")
+    print(f"Gram Matrix Time: {gram_time:.4f}s")
+    print(f"Mean Training Time: {mean_train_time:.4f}s")
+    print(f"Mean Inference Time: {mean_inference_time:.4f}s")
+    print(f"Gram Matrix Size: {gram_matrix_size:.4f}MB")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Train and test temporal graph kernels.')

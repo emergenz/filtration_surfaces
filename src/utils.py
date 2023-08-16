@@ -92,9 +92,9 @@ def print_iteration_metrics(iteration_metrics, f=None):
             mean = np.mean(iteration_metrics[metric]) * 100
             sdev = np.std(iteration_metrics[metric]) * 100
         if f is None:
-            print(f"{metric}: {mean:2.2f} +- {sdev:2.2f}")
+            print(f"{metric}: {mean:2.4f} +- {sdev:2.4f}")
         else:
-            print(f"{metric}: {mean:2.2f} +- {sdev:2.2f}", file=f)
+            print(f"{metric}: {mean:2.4f} +- {sdev:2.4f}", file=f)
 
 def update_iteration_metrics(fold_metrics, iteration_metrics):
     """

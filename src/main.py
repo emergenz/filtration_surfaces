@@ -61,7 +61,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # generate the filtration surfaces (saved to csv for easier handling)
-    surfaces, y, column_names = create_surfaces(args)
+    surfaces, y, column_names, surface_creation_time = create_surfaces(args)
 
     n_dynamic_graphs = len(y)
     n_node_labels = surfaces[0][0].shape[1]  # Assume all graphs have the same number of node labels
@@ -90,6 +90,7 @@ if __name__ == "__main__":
             X.append(dynamic_graph_representation)
 
         run_rf(X, y)
+        print(f"Surface creation time: {surface_creation_time:.4f}s")
 
     elif args.method == "inductive":
         X = surfaces
