@@ -98,7 +98,7 @@ def train_and_inference_speed(DS_prefix, tgkernel_path, labels):
         training_time = end_train_time - start_train_time
 
         start_inference_time = time.time()
-        _ = svm.score(X[test_idx], y[test_idx])
+        _ = svm.score(gram_matrix[test_idx][:, train_idx], labels[test_idx])
         end_inference_time = time.time()
         inference_time = end_inference_time - start_inference_time
 
