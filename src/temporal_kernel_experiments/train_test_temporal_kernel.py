@@ -48,7 +48,7 @@ def train_and_test_svm(DS_prefix, tgkernel_path, labels):
 
     outer_cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
     
-    for train_idx, test_idx in outer_cv.split(gram_matrix, labels):
+    for train_idx, test_idx in outer_cv.split(np.zeros(len(labels)), labels):
         best_score = -float('inf')
         best_k = -1
         best_c = -1
