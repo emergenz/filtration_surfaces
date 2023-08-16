@@ -83,6 +83,7 @@ def train_and_inference_speed(DS_prefix, tgkernel_path, labels):
 
     start_gram_time = time.time() # check whether call to tgkernel is synchronous (i.e. time is captured)
     gram_matrix = compute_gram_matrix(DS_prefix, 0, tgkernel_path) # use some fixed k
+    gram_matrix_size = gram_matrix.size * 8 / (1024 * 1024) # in MB
     end_gram_time = time.time()
     gram_time = end_gram_time - start_gram_time
 
@@ -103,7 +104,7 @@ def train_and_inference_speed(DS_prefix, tgkernel_path, labels):
         train_times.append(training_time)
         inference_times.append(inference_time)
 
-    return np.mean(train_times), np.mean(inference_times), gram_time
+    return np.mean(train_times), np.mean(inference_times), gram_time, gram_matrix_size
 
 def compute_accuracies(DS_prefix, tgkernel_path):
     labels = load_data(DS_prefix)
@@ -123,10 +124,11 @@ def compute_accuracies(DS_prefix, tgkernel_path):
 
 def compute_times(DS_prefix, tgkernel_path):
     labels = load_data(DS_prefix)
-    mean_train_time, mean_inference_time, gram_time = train_and_inference_speed(DS_prefix, tgkernel_path, labels)
+    mean_train_time, mean_inference_time, gram_time, gram_matrix_size = train_and_inference_speed(DS_prefix, tgkernel_path, labels)
     print(f"Gram Matrix Time: {gram_time:.2f}s")
     print(f"Mean Training Time: {mean_train_time:.2f}s")
     print(f"Mean Inference Time: {mean_inference_time:.2f}s")
+    print(f"Gram Matrix Size: {gram_matrix_size:.2f}MB")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Train and test temporal graph kernels.')
