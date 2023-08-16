@@ -203,7 +203,7 @@ def main():
     parser.add_argument('--num-timesteps', type=int, default=10, help='Number of timesteps')
     parser.add_argument('--num-edges', type=int, default=2, help='Number of edges to add at each timestep')
     parser.add_argument('--num-labels', type=int, default=2, help='Number of possible labels for nodes')
-    parser.add_argument('--format', type=str, default="pickle", help='Format of the saved dynamic graphs (pickle, txt)')
+    parser.add_argument('--format', type=str, default="pickle", help='Format of the saved dynamic graphs (pickle, txt, both)')
 
     args = parser.parse_args()
 
@@ -224,9 +224,12 @@ def main():
 
     # Save the dynamic graphs
     if args.format == "pickle":
-        save_dynamic_graphs(dynamic_graphs, labels, f"./data/labeled_datasets/{args.type}/")
+        save_dynamic_graphs(dynamic_graphs, labels, f"./data/labeled_datasets/{args.type}_pickle/")
     elif args.format == "txt":
-        save_dynamic_graphs_txt_format(dynamic_graphs, labels, f"./data/labeled_datasets/{args.type}/")
+        save_dynamic_graphs_txt_format(dynamic_graphs, labels, f"./data/labeled_datasets/{args.type}_txt/")
+    elif args.format == "both":
+        save_dynamic_graphs(dynamic_graphs, labels, f"./data/labeled_datasets/{args.type}_txt/")
+        save_dynamic_graphs_txt_format(dynamic_graphs, labels, f"./data/labeled_datasets/{args.type}_pickle/")
     else:
         print(f"Unsupported format: {args.format}")
 
