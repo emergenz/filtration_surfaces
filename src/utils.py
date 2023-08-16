@@ -85,8 +85,12 @@ def print_iteration_metrics(iteration_metrics, f=None):
 
     """
     for metric in iteration_metrics:  #
-        mean = np.mean(iteration_metrics[metric]) * 100
-        sdev = np.std(iteration_metrics[metric]) * 100
+        if metric in ["training_time", "inference_time"]:
+            mean = np.mean(iteration_metrics[metric])
+            sdev = np.std(iteration_metrics[metric])
+        else:
+            mean = np.mean(iteration_metrics[metric]) * 100
+            sdev = np.std(iteration_metrics[metric]) * 100
         if f is None:
             print(f"{metric}: {mean:2.2f} +- {sdev:2.2f}")
         else:
