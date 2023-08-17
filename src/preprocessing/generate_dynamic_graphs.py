@@ -81,13 +81,23 @@ def generate_dynamic_graphs_via_random_ba_graphs(num_graphs, num_nodes, num_time
 def generate_dynamic_graphs_via_ba_growth(num_graphs, initial_nodes, num_timesteps, num_edges, num_labels):
     dynamic_graphs = []
     labels = []
+    
     for _ in range(num_graphs):
         dynamic_graph = []
 
         # Start with an initial complete graph
         g = Graph.Full(initial_nodes)
+        
+        # Uniform or randomized node labels
         g.vs["label"] = [str(random.randint(1, num_labels)) for _ in range(initial_nodes)]
-        g.es["weight"] = [random.randint(1, 10) for _ in range(g.ecount())]
+        
+        # Decide edge weight pattern (mostly high or mostly low) for this graph
+        coin_flip = random.choice([True, False])
+        if coin_flip:
+            initial_weights = [random.randint(6, 10) for _ in range(g.ecount())]
+        else:
+            initial_weights = [random.randint(1, 5) for _ in range(g.ecount())]
+        g.es["weight"] = initial_weights
 
         dynamic_graph.append(g.copy())
 
@@ -102,21 +112,25 @@ def generate_dynamic_graphs_via_ba_growth(num_graphs, initial_nodes, num_timeste
 
             for t in targets:
                 g.add_edges([(len(degrees)-1, t)])
-
-            # Assign node label for the new node
+            
+            # Uniform or randomized node labels for new nodes
             g.vs[len(degrees)-1]["label"] = str(random.randint(1, num_labels))
 
-            # Assign edge attributes for the new edges
-            g.es[g.ecount()-num_edges:]["weight"] = [random.randint(1, 10) for _ in range(num_edges)]
+            # Edge weights for new edges, following the coin_flip pattern
+            if coin_flip:
+                new_weights = [random.randint(6, 10) for _ in range(num_edges)]
+            else:
+                new_weights = [random.randint(1, 5) for _ in range(num_edges)]
+            g.es[g.ecount()-num_edges:]["weight"] = new_weights
 
             dynamic_graph.append(g.copy())
 
         dynamic_graphs.append(dynamic_graph)
-
-        print(int(np.mean(g.es["weight"]) > 5))
+        
+        # Label based on the edge weights (average > 5 or not)
         labels.append(int(np.mean(g.es["weight"]) > 5))
+    
     return dynamic_graphs, labels
-
 
 def save_dynamic_graphs(dynamic_graphs, labels, path):
     """
