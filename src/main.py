@@ -91,8 +91,3 @@ if __name__ == "__main__":
 
         run_rf(X, y)
         print(f"Surface creation time: {surface_creation_time:.4f}s")
-
-    elif args.method == "inductive":
-        X = surfaces
-        # Replace run_rf_inductive with the actual function
-        # run_rf_inductive(X, y, column_names=column_names)
