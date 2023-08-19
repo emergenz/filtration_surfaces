@@ -81,13 +81,23 @@ def generate_dynamic_graphs_via_random_ba_graphs(num_graphs, num_nodes, num_time
 def generate_dynamic_graphs_via_ba_growth(num_graphs, initial_nodes, num_timesteps, num_edges, num_labels):
     dynamic_graphs = []
     labels = []
+    
     for _ in range(num_graphs):
         dynamic_graph = []
 
         # Start with an initial complete graph
         g = Graph.Full(initial_nodes)
+        
+        # Uniform or randomized node labels
         g.vs["label"] = [str(random.randint(1, num_labels)) for _ in range(initial_nodes)]
-        g.es["weight"] = [random.randint(1, 10) for _ in range(g.ecount())]
+        
+        # Decide edge weight pattern (mostly high or mostly low) for this graph
+        coin_flip = random.choice([True, False])
+        if coin_flip:
+            initial_weights = [random.randint(6, 10) for _ in range(g.ecount())]
+        else:
+            initial_weights = [random.randint(1, 5) for _ in range(g.ecount())]
+        g.es["weight"] = initial_weights
 
         dynamic_graph.append(g.copy())
 
@@ -102,21 +112,25 @@ def generate_dynamic_graphs_via_ba_growth(num_graphs, initial_nodes, num_timeste
 
             for t in targets:
                 g.add_edges([(len(degrees)-1, t)])
-
-            # Assign node label for the new node
+            
+            # Uniform or randomized node labels for new nodes
             g.vs[len(degrees)-1]["label"] = str(random.randint(1, num_labels))
 
-            # Assign edge attributes for the new edges
-            g.es[g.ecount()-num_edges:]["weight"] = [random.randint(1, 10) for _ in range(num_edges)]
+            # Edge weights for new edges, following the coin_flip pattern
+            if coin_flip:
+                new_weights = [random.randint(6, 10) for _ in range(num_edges)]
+            else:
+                new_weights = [random.randint(1, 5) for _ in range(num_edges)]
+            g.es[g.ecount()-num_edges:]["weight"] = new_weights
 
             dynamic_graph.append(g.copy())
 
         dynamic_graphs.append(dynamic_graph)
-
-        print(int(g.vs["label"].count('1') > g.vcount() / 2))
-        labels.append(int(g.vs["label"].count('1') > g.vcount() / 2))
+        
+        # Label based on the edge weights (average > 5 or not)
+        labels.append(int(np.mean(g.es["weight"]) > 5))
+    
     return dynamic_graphs, labels
-
 
 def save_dynamic_graphs(dynamic_graphs, labels, path):
     """
@@ -138,15 +152,72 @@ def save_dynamic_graphs(dynamic_graphs, labels, path):
         with open(filename, "wb") as f:
             pickle.dump((graph, label), f)
 
+def save_dynamic_graphs_txt_format(dynamic_graphs, labels, path, dataset_name="DS"):
+    """
+    Save each dynamic graph and its label into the specified format.
+    """
+    os.makedirs(path, exist_ok=True)
+    
+    prefix = os.path.join(path, dataset_name)
+
+    # File paths
+    a_path = f"{prefix}_A.txt"
+    graph_indicator_path = f"{prefix}_graph_indicator.txt"
+    graph_labels_path = f"{prefix}_graph_labels.txt"
+    node_labels_path = f"{prefix}_node_labels.txt"
+    edge_attributes_path = f"{prefix}_edge_attributes.txt"
+    info_path = f"{prefix}_info.txt"
+
+    # Dictionary to track first appearance of each edge
+    edge_to_time = {}
+
+    # Counters
+    total_nodes = 0
+    total_graphs = len(dynamic_graphs)
+
+    # Go through graphs and timesteps
+    for graph_id, graph_list in enumerate(dynamic_graphs, 1):
+        for timestep, graph in enumerate(graph_list):
+            for edge in graph.es:
+                edge_tuple = (edge.source + total_nodes + 1, edge.target + total_nodes + 1)
+                if edge_tuple not in edge_to_time:
+                    edge_to_time[edge_tuple] = timestep
+            total_nodes += len(graph.vs)
+
+    # Now, write edges and their first appearance times
+    with open(a_path, 'w') as a_file, open(edge_attributes_path, 'w') as ea_file:
+        for edge, timestep in edge_to_time.items():
+            a_file.write(f"{edge[0]},{edge[1]}\n")
+            ea_file.write(f"{timestep}\n")
+
+    # Write nodes, graph indicators and graph labels
+    with open(graph_indicator_path, 'w') as gi_file, open(node_labels_path, 'w') as nl_file, open(graph_labels_path, 'w') as gl_file:
+        node_counter = 0
+        for graph_id, graph_list in enumerate(dynamic_graphs, 1):
+            for timestep, graph in enumerate(graph_list):
+                for v in graph.vs:
+                    node_counter += 1
+                    gi_file.write(f"{graph_id}\n")
+                    nl_file.write(f"{timestep},{v['label']}\n")
+            gl_file.write(f"{labels[graph_id-1]}\n")
+
+    # Write the info file
+    total_edges = len(edge_to_time)
+    with open(info_path, 'w') as info_file:
+        info_file.write(f"Total number of nodes: {total_nodes}\n")
+        info_file.write(f"Total number of edges: {total_edges}\n")
+        info_file.write(f"Total number of graphs: {total_graphs}\n")
+
 
 def main():
     parser = argparse.ArgumentParser(description='Generate and save dynamic graphs.')
     parser.add_argument('--type', type=str, default="barabasi_albert_growth", help='Type of dynamic graph to generate (erdos_renyi, barabasi_albert_random, baraba_albert_growth)')
-    parser.add_argument('--num-graphs', type=int, default=10, help='Number of graphs to generate')
+    parser.add_argument('--num-graphs', type=int, default=10, help='Number of dynamic graphs to generate')
     parser.add_argument('--initial-nodes', type=int, default=5, help='Number of initial nodes in the graph')
     parser.add_argument('--num-timesteps', type=int, default=10, help='Number of timesteps')
     parser.add_argument('--num-edges', type=int, default=2, help='Number of edges to add at each timestep')
     parser.add_argument('--num-labels', type=int, default=2, help='Number of possible labels for nodes')
+    parser.add_argument('--format', type=str, default="pickle", help='Format of the saved dynamic graphs (pickle, txt, both)')
 
     args = parser.parse_args()
 
@@ -166,7 +237,15 @@ def main():
     )
 
     # Save the dynamic graphs
-    save_dynamic_graphs(dynamic_graphs, labels, f"./data/labeled_datasets/{args.type}/")
+    if args.format == "pickle":
+        save_dynamic_graphs(dynamic_graphs, labels, f"./data/labeled_datasets/{args.type}_{args.num_graphs}_pickle/")
+    elif args.format == "txt":
+        save_dynamic_graphs_txt_format(dynamic_graphs, labels, f"./data/labeled_datasets/{args.type}_{args.num_graphs}_txt/")
+    elif args.format == "both":
+        save_dynamic_graphs(dynamic_graphs, labels, f"./data/labeled_datasets/{args.type}_{args.num_graphs}_pickle/")
+        save_dynamic_graphs_txt_format(dynamic_graphs, labels, f"./data/labeled_datasets/{args.type}_{args.num_graphs}_txt/")
+    else:
+        print(f"Unsupported format: {args.format}")
 
 if __name__ == "__main__":
     main()

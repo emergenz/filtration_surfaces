@@ -1,4 +1,5 @@
 # adapted from https://github.com/BorgwardtLab/filtration_curves
+import time
 import numpy as np
 import os
 import glob
@@ -151,6 +152,7 @@ def save_curves_for_dynamic_graphs(
     # Create sorted list of all possible node labels
     all_node_labels = sorted(all_node_labels)
 
+    surface_creation_time = 0
     for filename in tqdm(filenames):
         # Each pickle file contains a sequence of igraphs
         dynamic_graph, label = pickle.load(open(filename, "rb"))
@@ -164,6 +166,7 @@ def save_curves_for_dynamic_graphs(
         if "weight" not in dynamic_graph[0].es.attributes():
                 dynamic_graph = relabel_edges_with_curvature(dynamic_graph)
 
+        surface_creation_start = time.time()
         for idx, graph in enumerate(dynamic_graph):
             # Generate the filtration curve for each graph in the dynamic graph
             # We will store this filtration curve as a separate csv for each timestamp
@@ -215,6 +218,9 @@ def save_curves_for_dynamic_graphs(
             os.makedirs(dynamic_graph_dir, exist_ok=True)
 
             df.to_csv(output_name, index=False)
+        surface_creation_end = time.time()
+        surface_creation_time += (surface_creation_end - surface_creation_start)
+    return surface_creation_time
 
 
 def create_surfaces(args):
@@ -242,10 +248,11 @@ def create_surfaces(args):
         List of column names (i.e. each unique node label)
 
     """
+    surface_creation_time = -1
     # check if filtration surfaces are already saved. If not, generate
     # them and save them.
     if not os.path.exists("./data/preprocessed_data/" + args.dataset + "/"):
-        save_curves_for_dynamic_graphs(
+        surface_creation_time = save_curves_for_dynamic_graphs(
             source_path="./data/labeled_datasets/" + args.dataset + "/",
             output_path="./data/preprocessed_data/" + args.dataset + "/",
         )
@@ -253,7 +260,7 @@ def create_surfaces(args):
     # load saved surfaces (faster processing)
     surfaces, y, column_names = load_surfaces(args)
 
-    return surfaces, y, column_names
+    return surfaces, y, column_names, surface_creation_time
 
 
 def load_surfaces(args):

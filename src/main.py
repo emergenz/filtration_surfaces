@@ -2,6 +2,7 @@
 import argparse
 import random
 import os
+import time
 import glob
 import warnings
 import numpy as np
@@ -32,12 +33,22 @@ def run_rf(X, y, n_iterations=10):
             y_test = [y[i] for i in test_index]
 
             clf = RandomForestClassifier(max_depth=None, random_state=0, n_estimators=1000, class_weight="balanced")
+
+            # Measure training time
+            start_train_time = time.time()
             clf.fit(X_train, y_train)
+            end_train_time = time.time()
+            training_time = end_train_time - start_train_time
+
+            # Measure inference time
+            start_inference_time = time.time()
             y_pred = clf.predict(X_test)
+            end_inference_time = time.time()
+            inference_time = end_inference_time - start_inference_time
 
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore")
-                fold_metrics = compute_fold_metrics(y_test, y_pred, fold_metrics)
+                fold_metrics = compute_fold_metrics(y_test, y_pred, training_time, inference_time, fold_metrics)
         iteration_metrics = update_iteration_metrics(fold_metrics, iteration_metrics)
         print(f"Temporary iteration metric after iteration {iteration}: {iteration_metrics}")
 
@@ -50,7 +61,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # generate the filtration surfaces (saved to csv for easier handling)
-    surfaces, y, column_names = create_surfaces(args)
+    surfaces, y, column_names, surface_creation_time = create_surfaces(args)
 
     n_dynamic_graphs = len(y)
     n_node_labels = surfaces[0][0].shape[1]  # Assume all graphs have the same number of node labels
@@ -79,6 +90,7 @@ if __name__ == "__main__":
             X.append(dynamic_graph_representation)
 
         run_rf(X, y)
+        print(f"Surface creation time: {surface_creation_time:.4f}s")
 
     elif args.method == "inductive":
         X = surfaces

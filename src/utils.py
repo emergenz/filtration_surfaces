@@ -3,7 +3,7 @@ from sklearn.metrics import accuracy_score
 import numpy as np
 
 
-def create_metric_dict(metrics=["accuracy"]):
+def create_metric_dict(metrics=["accuracy", "training_time", "inference_time"]):
     """
     Creates a dictionary that will store the metrics calculated in cross
     validation.
@@ -27,7 +27,7 @@ def create_metric_dict(metrics=["accuracy"]):
     return metric_dict
 
 
-def compute_fold_metrics(y_test, y_pred, metric_dict):
+def compute_fold_metrics(y_test, y_pred, training_time, inference_time, metric_dict):
     """
     Calculates the metrics of interest on the classifier and updates the
     dictionary with the values.
@@ -62,6 +62,8 @@ def compute_fold_metrics(y_test, y_pred, metric_dict):
 
     # update dictionary values
     metric_dict["accuracy"].append(accuracy)
+    metric_dict["training_time"].append(training_time)
+    metric_dict["inference_time"].append(inference_time)
 
     return metric_dict
 
@@ -83,12 +85,16 @@ def print_iteration_metrics(iteration_metrics, f=None):
 
     """
     for metric in iteration_metrics:  #
-        mean = np.mean(iteration_metrics[metric]) * 100
-        sdev = np.std(iteration_metrics[metric]) * 100
-        if f is None:
-            print(f"{metric}: {mean:2.2f} +- {sdev:2.2f}")
+        if metric in ["training_time", "inference_time"]:
+            mean = np.mean(iteration_metrics[metric])
+            sdev = np.std(iteration_metrics[metric])
         else:
-            print(f"{metric}: {mean:2.2f} +- {sdev:2.2f}", file=f)
+            mean = np.mean(iteration_metrics[metric]) * 100
+            sdev = np.std(iteration_metrics[metric]) * 100
+        if f is None:
+            print(f"{metric}: {mean:2.4f} +- {sdev:2.4f}")
+        else:
+            print(f"{metric}: {mean:2.4f} +- {sdev:2.4f}", file=f)
 
 def update_iteration_metrics(fold_metrics, iteration_metrics):
     """
@@ -116,7 +122,7 @@ def update_iteration_metrics(fold_metrics, iteration_metrics):
         the current iteration.
 
     """
-    for metric in ["accuracy"]:
+    for metric in fold_metrics:
         iteration_metrics[metric].append(np.mean(fold_metrics[metric]))
 
     return iteration_metrics
